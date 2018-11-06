@@ -1,7 +1,9 @@
 ArrayList<Cell> grid;
 ArrayList<Cell> stack;
+ArrayList<Cell> openset;
+ArrayList<Cell> closedset;
 
-int w = 200;
+int w = 10;
 int cols;
 int rows;
 Boolean click = false;
@@ -12,13 +14,14 @@ Cell current;
 //Cell[][] grid = new Cell[cols][rows];
 void setup(){
   size(1000, 1000);
-  //background(51);
+  background(51);
   colorMode(HSB);
   cols = floor(width/w);
   rows = floor(height/w);
   grid = new ArrayList<Cell>();
   stack = new ArrayList<Cell>();
-
+  openset = new ArrayList<Cell>();
+  closedset = new ArrayList<Cell>();
   /*Grid init*/
   for (int j = 0; j < rows; j++){
     for(int i= 0; i < cols; i++){
@@ -26,29 +29,37 @@ void setup(){
     }
   }
   current = grid.get(0);
+  
 }
 Boolean finished = false;
+int counter = 0;
+String mode = "gen";
+Boolean isgenerated = false;
 void draw(){
-  background(51);
- // println(frameRate);
+  //background(51);
+  println(frameRate);
+  
+
    //frameRate(1);
-   int counter = 0;
    do{ 
-      /*
+      /* Use When visualizing slowly instead of generating
       for (int i = 0; i < grid.size(); i++){
         if(grid.get(i).visited){
           grid.get(i).show();
         }
       }
       */
-      //for (int i = 0; i < grid.size(); i++){
-        // grid.get(i).show();
+      //for(int s = 0; s < 10; s++){ This is for creating more speed when visualizing more slowly
+      
+      //for (int i = 0; i < grid.size(); i++){ Old Functionality
+         //grid.get(i).show();
         
       //}
       current.visited = true;
 
-      current.highlight();
-      
+      if (!finished){
+        //current.highlight();
+      }
       Cell next = current.checkNeighbors();
       if (next != null){
         next.visited = true;
@@ -62,36 +73,34 @@ void draw(){
       }
 
        if (((current.i == 0 & current.j == 0) & (counter > 0))){
-         //current.highlight();
          finished = true;
        }
       counter++;
       println(current.i,current.j);
-      println(counter,finished);
+      //println(counter,finished);
    }while (!finished);
-    
-    
-    for (int i = 0; i < grid.size(); i++){
-       grid.get(i).show();
-      
+   //} *end of for(int s = 0; s < 10; s++)
+    if(!isgenerated){
+      for (int i = 0; i < grid.size(); i++){
+         grid.get(i).show();
+         isgenerated = true;
+      }
     }
-    //println(grid.get(0).visited);
-    
-    //current.show();
-    /*
-    for (int i = 0; i < stack.size(); i++){
-      stack.get(i).show();
-    }
-    */
-
     
 
+    //for (int i = 0; i < stack.size(); i++){
+      //stack.get(i).show();
+    //}
+    
+
+    
+  
   if (click){
     mousePressed();
     click = false;
   }
-
-  noLoop();
+  println(isgenerated);
+  //noLoop();
 }
 
 class Cell
@@ -101,12 +110,18 @@ class Cell
   Boolean[] walls;
   Boolean visited;
   color col;
+  
+  //A star vars
+  int f = 0;
+  int g = 0;
+  int h = 0;
+  
   Cell(int i, int j){
     this.i = i;
     this.j = j;
     walls = new Boolean[]{true,true,true,true};
     this.visited = false;
-    this.col = color(frameCount%255,255,255,100);
+    this.col = color(0,255,255,0);
   }
   Cell checkNeighbors(){
     ArrayList<Cell> neighbors = new ArrayList<Cell>();
