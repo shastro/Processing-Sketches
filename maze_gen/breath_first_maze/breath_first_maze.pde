@@ -60,13 +60,12 @@ void draw(){
       } else if (stack.size() > 0){
         current = stack.remove(stack.size() - 1);
       }
-      counter++;
-      println(current.i,current.j);
-      println(counter,finished);
-       if (!((current.i == 0 & current.j == 0) & (counter > 0))){
+
+       if (((current.i == 0 & current.j == 0) & (counter > 0))){
          //current.highlight();
          finished = true;
        }
+      counter++;
       println(current.i,current.j);
       println(counter,finished);
    }while (!finished);
@@ -76,6 +75,7 @@ void draw(){
        grid.get(i).show();
       
     }
+    //println(grid.get(0).visited);
     
     //current.show();
     /*
@@ -91,7 +91,7 @@ void draw(){
     click = false;
   }
 
-  //noLoop();
+  noLoop();
 }
 
 class Cell
