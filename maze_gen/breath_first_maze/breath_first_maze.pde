@@ -2,12 +2,17 @@ ArrayList<Cell> grid;
 ArrayList<Cell> stack;
 ArrayList<Cell> openset;
 ArrayList<Cell> closedset;
+ArrayList<Cell> path;
 
-int w = 10;
+int w = 5; //Defines size of cell in pixels
 int cols;
 int rows;
 Boolean click = false;
+Boolean USEASTAR = false; //USE THIS TO DISABLE ASTAR
 Cell current;
+Cell start;
+Cell end;
+
 //Cell grid = new LinkedList();
 
 //stack = new ArrayList<Cell>();
@@ -22,6 +27,7 @@ void setup(){
   stack = new ArrayList<Cell>();
   openset = new ArrayList<Cell>();
   closedset = new ArrayList<Cell>();
+  path = new ArrayList<Cell>();
   /*Grid init*/
   for (int j = 0; j < rows; j++){
     for(int i= 0; i < cols; i++){
@@ -30,25 +36,36 @@ void setup(){
   }
   current = grid.get(0);
   
+  //A* cell inits
+  start = grid.get(0);
+  end = grid.get(index(cols - 1, rows - 1));
+  
+  openset.add(start);
+  /* a_neighbor init*/
+  for (int i = 0; i < grid.size(); i++){
+    grid.get(i).a_addNeighbors();
+  }
+  
 }
 Boolean finished = false;
 int counter = 0;
 String mode = "gen";
 Boolean isgenerated = false;
+
 void draw(){
-  //background(51);
+  background(51);
   println(frameRate);
   
 
    //frameRate(1);
-   do{ 
-      /* Use When visualizing slowly instead of generating
+   //do{ 
+       //Use When visualizing slowly instead of generating
       for (int i = 0; i < grid.size(); i++){
         if(grid.get(i).visited){
           grid.get(i).show();
         }
       }
-      */
+      
       //for(int s = 0; s < 10; s++){ This is for creating more speed when visualizing more slowly
       
       //for (int i = 0; i < grid.size(); i++){ Old Functionality
@@ -58,7 +75,7 @@ void draw(){
       current.visited = true;
 
       if (!finished){
-        //current.highlight();
+        current.highlight();
       }
       Cell next = current.checkNeighbors();
       if (next != null){
@@ -78,20 +95,78 @@ void draw(){
       counter++;
       println(current.i,current.j);
       //println(counter,finished);
-   }while (!finished);
+   //}while (!finished);
    //} *end of for(int s = 0; s < 10; s++)
+   
     if(!isgenerated){
       for (int i = 0; i < grid.size(); i++){
          grid.get(i).show();
          isgenerated = true;
       }
     }
-    
+    //*A star ---------------------------------------------
+    if(USEASTAR){
+      if (openset.size() > 0){
+        int lowestIndex = 0;
+        for (int i = 0; i < openset.size(); i++){
+          if(openset.get(i).f < openset.get(lowestIndex).f){
+            lowestIndex = i;
+          }
+        }
+        
+       Cell a_current = openset.get(lowestIndex);
+       
+       if (a_current == end){
 
-    //for (int i = 0; i < stack.size(); i++){
-      //stack.get(i).show();
-    //}
-    
+         println("Done!");
+       }
+       
+       openset.remove(a_current);
+       closedset.add(a_current);
+       
+       for (int i = 0; i < a_current.a_neighbors.size(); i++){
+         Cell neighbor = a_current.a_neighbors.get(i);
+         if(!closedset.contains(neighbor)){
+           int tmpg = a_current.g + 1;
+           if (openset.contains(neighbor)){
+             if(tmpg < neighbor.g){
+               neighbor.g = tmpg;
+             }
+           } else {
+             neighbor.g = tmpg;
+             openset.add(neighbor);
+           }
+           //Core Algorithm
+           neighbor.h = heuristic(neighbor,end);
+           neighbor.f = neighbor.g + neighbor.h;
+           neighbor.previous = current;
+             
+         }
+       }
+       
+      } else {
+        //nosolution
+      }
+  
+      for (int i = 0; i < closedset.size(); i++){
+        grid.get(i).a_col = color(255,0,0,255);
+        grid.get(i).a_show();
+      }
+      for (int i = 0; i < openset.size(); i++){
+        grid.get(i).a_col = color(0,255,0,255);
+        grid.get(i).a_show();      
+      }
+       Cell temp = current;
+       path.add(temp);
+       while(temp.previous != null){
+         path.add(temp.previous);
+         temp = temp.previous;
+       }
+      for (int i = 0; i < path.size(); i++){
+        grid.get(i).a_col = color(200,0,0,255);
+        grid.get(i).a_show();      
+      }
+    }
 
     
   
@@ -102,7 +177,10 @@ void draw(){
   println(isgenerated);
   //noLoop();
 }
-
+float heuristic(Cell a, Cell b){
+  float d = dist(a.i, a.j, b.i, b.j);
+  return d;
+}
 class Cell
 {
   int i;
@@ -110,15 +188,25 @@ class Cell
   Boolean[] walls;
   Boolean visited;
   color col;
-  
   //A star vars
-  int f = 0;
+  float f = 0;
   int g = 0;
-  int h = 0;
+  float h = 0;
+  color a_col;
+  ArrayList<Cell> a_neighbors = new ArrayList<Cell>();
+  Cell previous = null;
   
   Cell(int i, int j){
     this.i = i;
     this.j = j;
+    walls = new Boolean[]{true,true,true,true};
+    this.visited = false;
+    this.col = color(0,255,255,0);
+  }
+  Cell(int i, int j, color a_col){ //Constructor Overloading
+    this.i = i;
+    this.j = j;
+    this.a_col = a_col;
     walls = new Boolean[]{true,true,true,true};
     this.visited = false;
     this.col = color(0,255,255,0);
@@ -161,6 +249,29 @@ class Cell
     }
     
   }
+  void a_addNeighbors(){
+    
+    if(index(i, j-1) != -1){
+      Cell top = grid.get(index(i, j-1));
+      a_neighbors.add(top);
+      
+    }
+    if(index(i + 1, j) != -1){
+      Cell right = grid.get(index(i + 1, j));
+      a_neighbors.add(right);
+      
+    }
+    if(index(i, j+1) != -1){
+      Cell bottom = grid.get(index(i, j+1));
+      a_neighbors.add(bottom);
+      
+    }
+    if(index(i - 1, j) != -1){
+      Cell left = grid.get(index(i - 1, j));
+      a_neighbors.add(left);
+      
+    }
+  }
   void highlight(){
     int x = this.i*w;
     int y = this.j*w;
@@ -192,6 +303,14 @@ class Cell
       rect(x,y,w,w);
     }
     
+  }
+  //A* show
+  void a_show(){
+    int x = this.i * w;
+    int y = this.j * w;
+    fill(this.a_col);
+    noStroke();
+    rect(x,y, w - 2, w - 2);
   }
 }
 
