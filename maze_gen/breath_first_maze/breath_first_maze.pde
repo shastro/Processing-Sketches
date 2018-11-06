@@ -1,7 +1,7 @@
 ArrayList<Cell> grid;
 ArrayList<Cell> stack;
 
-int w = 10;
+int w = 200;
 int cols;
 int rows;
 Boolean click = false;
@@ -12,7 +12,7 @@ Cell current;
 //Cell[][] grid = new Cell[cols][rows];
 void setup(){
   size(1000, 1000);
-  background(51);
+  //background(51);
   colorMode(HSB);
   cols = floor(width/w);
   rows = floor(height/w);
@@ -27,49 +27,71 @@ void setup(){
   }
   current = grid.get(0);
 }
-
+Boolean finished = false;
 void draw(){
   background(51);
  // println(frameRate);
-    //frameRate(10);\
-   while((frameCount > 0 && current.i == 0 && current.j == 0)){ 
-    ///*
-    for (int i = 0; i < grid.size(); i++){
-      if(grid.get(i).visited){
-        grid.get(i).show();
+   //frameRate(1);
+   int counter = 0;
+   do{ 
+      /*
+      for (int i = 0; i < grid.size(); i++){
+        if(grid.get(i).visited){
+          grid.get(i).show();
+        }
       }
-    }
-    //*/
-    current.visited = true;
-    current.highlight();
-    Cell next = current.checkNeighbors();
-    if (next != null){
-      next.visited = true;
-      stack.add(current);
-      removeWalls(current, next);
-      //current.col = color(frameCount%255,0,255,101);
-      current = next;
+      */
+      //for (int i = 0; i < grid.size(); i++){
+        // grid.get(i).show();
+        
+      //}
+      current.visited = true;
+
+      current.highlight();
       
-    } else if (stack.size() > 0){
-      current = stack.remove(stack.size() - 1);
+      Cell next = current.checkNeighbors();
+      if (next != null){
+        next.visited = true;
+        stack.add(current);
+        removeWalls(current, next);
+        //current.col = color(frameCount%255,0,255,101);
+        current = next;
+        
+      } else if (stack.size() > 0){
+        current = stack.remove(stack.size() - 1);
+      }
+      counter++;
+      println(current.i,current.j);
+      println(counter,finished);
+       if (!((current.i == 0 & current.j == 0) & (counter > 0))){
+         //current.highlight();
+         finished = true;
+       }
+      println(current.i,current.j);
+      println(counter,finished);
+   }while (!finished);
+    
+    
+    for (int i = 0; i < grid.size(); i++){
+       grid.get(i).show();
+      
     }
+    
     //current.show();
     /*
     for (int i = 0; i < stack.size(); i++){
       stack.get(i).show();
     }
     */
-    }
-  for (int i = 0; i < grid.size(); i++){
-    grid.get(i).show();
+
     
-  }
+
   if (click){
     mousePressed();
     click = false;
   }
 
-  noLoop();
+  //noLoop();
 }
 
 class Cell
