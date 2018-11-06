@@ -4,7 +4,7 @@ ArrayList<Cell> openset;
 ArrayList<Cell> closedset;
 ArrayList<Cell> path;
 
-int w = 5; //Defines size of cell in pixels
+int w = 3; //Defines size of cell in pixels
 int cols;
 int rows;
 Boolean click = false;
@@ -13,14 +13,19 @@ Cell current;
 Cell start;
 Cell end;
 
+enum mode{
+  SLOWGEN
+};
+
 //Cell grid = new LinkedList();
 
 //stack = new ArrayList<Cell>();
 //Cell[][] grid = new Cell[cols][rows];
 void setup(){
-  size(1000, 1000);
-  background(51);
+  //size(1080, 2220); //Phone
+  size(1000,1000);
   colorMode(HSB);
+  background(51);
   cols = floor(width/w);
   rows = floor(height/w);
   grid = new ArrayList<Cell>();
@@ -34,7 +39,9 @@ void setup(){
       grid.add(new Cell(i,j));
     }
   }
-  current = grid.get(0);
+  int r = int(random(grid.size()-1));
+  //int r = 0;
+  current = grid.get(r);
   
   //A* cell inits
   start = grid.get(0);
@@ -53,18 +60,18 @@ String mode = "gen";
 Boolean isgenerated = false;
 
 void draw(){
-  background(51);
+  //background(51);
   println(frameRate);
   
 
    //frameRate(1);
-   //do{ 
+   do{ 
        //Use When visualizing slowly instead of generating
-      for (int i = 0; i < grid.size(); i++){
-        if(grid.get(i).visited){
-          grid.get(i).show();
-        }
-      }
+      //for (int i = 0; i < grid.size(); i++){
+        //if(grid.get(i).visited){
+          //grid.get(i).show();
+        //}
+      //}
       
       //for(int s = 0; s < 10; s++){ This is for creating more speed when visualizing more slowly
       
@@ -82,7 +89,7 @@ void draw(){
         next.visited = true;
         stack.add(current);
         removeWalls(current, next);
-        //current.col = color(frameCount%255,0,255,101);
+        //current.col = color(255,255,255,101);
         current = next;
         
       } else if (stack.size() > 0){
@@ -95,14 +102,19 @@ void draw(){
       counter++;
       println(current.i,current.j);
       //println(counter,finished);
-   //}while (!finished);
+   }while (!finished);
    //} *end of for(int s = 0; s < 10; s++)
    
     if(!isgenerated){
       for (int i = 0; i < grid.size(); i++){
-         grid.get(i).show();
+        if(grid.get(i).visited){
+          grid.get(i).show();
+        }
+      }      
+      //for (int i = 0; i < grid.size(); i++){
+         //grid.get(i).show();
          isgenerated = true;
-      }
+      //}
     }
     //*A star ---------------------------------------------
     if(USEASTAR){
@@ -175,7 +187,7 @@ void draw(){
     click = false;
   }
   println(isgenerated);
-  //noLoop();
+  noLoop();
 }
 float heuristic(Cell a, Cell b){
   float d = dist(a.i, a.j, b.i, b.j);
@@ -276,7 +288,7 @@ class Cell
     int x = this.i*w;
     int y = this.j*w;
     noStroke();
-    fill(0,0,255,255);
+    fill(255,255,130,255);
     rect(x,y,w,w);
   }
   void show(){
@@ -342,5 +354,6 @@ void removeWalls(Cell cur, Cell nxt){
 }
 
 void mousePressed(){
-  saveFrame("snip###.png");
+  int r = int(random(1000));
+  saveFrame("snip" + r +".png");
 }
